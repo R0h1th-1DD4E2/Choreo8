@@ -42,16 +42,16 @@ reg [1:0] clk_divider;
 //                     Clock divider logic
 //----------------------------------------------------------------
 
-// Input is a 4Hz clock and the speed sel divides it to 1Hz
+// Input is a 8Hz clock and the speed sel divides it to 4Hz in general and at slow it is 1Hz
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         clk_divider <= 2'b00;
         div_clk <= 1'b0;
     end else if (pause) begin
-        div_clk <= div_clk; // Maintain current state
+        div_clk <= div_clk;     // Maintain current state
     end else begin
         if (speed_sel == 1'b0) begin
-            div_clk <= 1'b1; // Fastest speed, no division
+            div_clk <= ~div_clk; // Fastest speed, no division
         end else begin
             clk_divider <= clk_divider + 1;
             if (clk_divider == 2'b11) begin
@@ -77,7 +77,7 @@ end
 //                     Main Output logic
 //----------------------------------------------------------------
 
-always @(posedge clk or negedge rst_n) begin
+always @(posedge div_clk or negedge rst_n) begin
 
     toggle_state <= ~toggle_state;
 
@@ -100,13 +100,13 @@ always @(posedge clk or negedge rst_n) begin
             //--------------knight rider logic---------------
                 3'b000: begin               
                     if (knight_dir == 0) begin
-                        led_out = (8'b00000001 << 1) || (8'b10000000 >> 1 ); // Move to middle
+                        led_out = (8'b00000001 << 1) | (8'b10000000 >> 1 ); // Move to middle
                         knight_pos <= knight_pos + 1;
                         if (knight_pos == 3) begin
                             knight_dir <= 1;
                         end
                     end else if (knight_dir == 1) begin
-                        led_out = (8'b00001000 >> 1) || (8'b00010000 << 1 ); // Move to end
+                        led_out = (8'b00001000 >> 1) | (8'b00010000 << 1 ); // Move to end
                         knight_pos <= knight_pos - 1;
                         if (knight_pos == 0) begin
                             knight_dir <= 0;
