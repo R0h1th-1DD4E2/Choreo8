@@ -18,7 +18,7 @@ module tt_um_BMSCE_T2 (
 
   wire speed_sel = ui_in[3]; // Using only 1 bit for speed control
   wire pause     = ui_in[4]; // Using ui_in[4] as pause
-  wire pat_sel   = ui_in[2:0]; // Using ui_in[2:0] for pattern selection
+  wire [2:0] pat_sel   = ui_in[2:0]; // Using ui_in[2:0] for pattern selection
   wire [7:0] led_out;          // LED output  
   
   led_pattern_generator lpg (
