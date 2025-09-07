@@ -236,7 +236,7 @@ async def test_basic_functionality(dut):
     
     # Reset
     dut._log.info("Reset")
-    dut.ena.value = 0
+    dut.ena.value = 0  # Hardware ena can be zero since enable is now ui_in[5]
     dut.ui_in.value = 0
     dut.uio_in.value = 0
     dut.rst_n.value = 0
@@ -246,10 +246,9 @@ async def test_basic_functionality(dut):
     dut._log.info("Test basic project behavior")
     
     # Test pattern 3 (Blink All) - should give predictable output
-    dut.ena.value = 1
-    dut.ui_in.value = 0b00011  # Pattern 3, fast speed, not paused
+    dut.ui_in.value = 0b100011  # Pattern 3, fast speed, not paused, enable=1 (bit 5)
     await ClockCycles(dut.clk, 1)
-    dut.ena.value = 0  # Disable after setting pattern
+    dut.ui_in.value = 0b000011  # Disable after setting pattern, enable=0
     
     # Wait for a few clock cycles and observe output
     await ClockCycles(dut.clk, 5)
