@@ -33,15 +33,15 @@ class LEDPatternTester:
         
         self.dut._log.info(f"\n=== Testing Pattern {pattern} ({pattern_name}) - Speed: {speed_name} ===")
         
-        # Enable module and set pattern
-        self.dut.ena.value = 1
-        self.dut.ui_in.value = (pattern & 0x7) | (speed << 3) | (0 << 4)  # pattern[2:0], speed[3], pause[4]=0
+        # Enable module using ui_in[5] and set pattern
+        # ui_in bit assignment: [5]=enable, [4]=pause, [3]=speed, [2:0]=pattern
+        self.dut.ui_in.value = (pattern & 0x7) | (speed << 3) | (0 << 4) | (1 << 5)  # pattern[2:0], speed[3], pause[4]=0, enable[5]=1
         
         # Wait a few clock cycles for pattern to take effect
         await ClockCycles(self.dut.clk, 3)
         
-        # Disable ena after pattern is set (as requested)
-        self.dut.ena.value = 0
+        # Disable ui_in[5] after pattern is set
+        self.dut.ui_in.value = (pattern & 0x7) | (speed << 3) | (0 << 4) | (0 << 5)  # enable[5]=0
         
         # Monitor the pattern for specified cycles
         for i in range(cycles_to_test):
@@ -53,11 +53,10 @@ class LEDPatternTester:
         """Test pause functionality"""
         self.dut._log.info(f"\n=== Testing Pause Functionality with Pattern {pattern} ===")
         
-        # Enable module and set pattern
-        self.dut.ena.value = 1
-        self.dut.ui_in.value = (pattern & 0x7) | (0 << 3) | (0 << 4)  # Fast speed, not paused
+        # Enable module using ui_in[5] and set pattern
+        self.dut.ui_in.value = (pattern & 0x7) | (0 << 3) | (0 << 4) | (1 << 5)  # Fast speed, not paused, enable=1
         await ClockCycles(self.dut.clk, 3)
-        self.dut.ena.value = 0
+        self.dut.ui_in.value = (pattern & 0x7) | (0 << 3) | (0 << 4) | (0 << 5)  # enable=0
         
         # Let pattern run for a few cycles
         await ClockCycles(self.dut.clk, 5)
@@ -66,11 +65,10 @@ class LEDPatternTester:
         led_before_pause = int(self.dut.uo_out.value)
         self.dut._log.info(f"LED state before pause: {led_before_pause:08b}")
         
-        # Enable pause - need to enable ena to change pause state
-        self.dut.ena.value = 1
-        self.dut.ui_in.value = (pattern & 0x7) | (0 << 3) | (1 << 4)  # Enable pause
+        # Enable pause - need to enable ui_in[5] to change pause state
+        self.dut.ui_in.value = (pattern & 0x7) | (0 << 3) | (1 << 4) | (1 << 5)  # Enable pause, enable=1
         await ClockCycles(self.dut.clk, 1)
-        self.dut.ena.value = 0
+        self.dut.ui_in.value = (pattern & 0x7) | (0 << 3) | (1 << 4) | (0 << 5)  # enable=0
         self.dut._log.info("PAUSE ENABLED")
         
         # Wait several clock cycles and check if pattern is frozen
@@ -81,11 +79,10 @@ class LEDPatternTester:
                 self.dut._log.error(f"ERROR: Pattern changed during pause at cycle {i}")
                 self.dut._log.error(f"Expected: {led_before_pause:08b}, Got: {current_led:08b}")
         
-        # Disable pause - need to enable ena to change pause state
-        self.dut.ena.value = 1
-        self.dut.ui_in.value = (pattern & 0x7) | (0 << 3) | (0 << 4)  # Disable pause
+        # Disable pause - need to enable ui_in[5] to change pause state
+        self.dut.ui_in.value = (pattern & 0x7) | (0 << 3) | (0 << 4) | (1 << 5)  # Disable pause, enable=1
         await ClockCycles(self.dut.clk, 1)
-        self.dut.ena.value = 0
+        self.dut.ui_in.value = (pattern & 0x7) | (0 << 3) | (0 << 4) | (0 << 5)  # enable=0
         self.dut._log.info("PAUSE DISABLED")
         
         # Wait a few cycles and verify pattern resumes
@@ -97,11 +94,10 @@ class LEDPatternTester:
         """Test reset functionality"""
         self.dut._log.info("\n=== Testing Reset Functionality ===")
         
-        # Enable module and set a pattern
-        self.dut.ena.value = 1
-        self.dut.ui_in.value = 0b00101  # Marquee pattern (5), fast speed, not paused
+        # Enable module using ui_in[5] and set a pattern
+        self.dut.ui_in.value = 0b100101  # Marquee pattern (5), fast speed, not paused, enable=1 (bit 5)
         await ClockCycles(self.dut.clk, 3)
-        self.dut.ena.value = 0
+        self.dut.ui_in.value = 0b000101  # enable=0
         
         await ClockCycles(self.dut.clk, 5)
         led_before_reset = int(self.dut.uo_out.value)
@@ -125,27 +121,26 @@ class LEDPatternTester:
         await ClockCycles(self.dut.clk, 3)
     
     async def test_enable(self):
-        """Test enable functionality"""
-        self.dut._log.info("\n=== Testing Enable Functionality ===")
+        """Test enable functionality using ui_in[5]"""
+        self.dut._log.info("\n=== Testing Enable Functionality (ui_in[5]) ===")
         
-        # Test with enable low - pattern changes should be ignored
-        self.dut.ena.value = 0
-        self.dut.ui_in.value = 0b00011  # Blink all pattern
+        # Test with ui_in[5] low - pattern changes should be ignored
+        self.dut.ui_in.value = 0b000011  # Blink all pattern, enable=0 (bit 5)
         await ClockCycles(self.dut.clk, 5)
-        self.dut._log.info("Pattern selection with ena=0 should be ignored")
+        self.dut._log.info("Pattern selection with ui_in[5]=0 should be ignored")
         
-        # Change pattern while ena is low
-        self.dut.ui_in.value = 0b00100  # Alternate pattern
+        # Change pattern while ui_in[5] is low
+        self.dut.ui_in.value = 0b000100  # Alternate pattern, enable=0 (bit 5)
         await ClockCycles(self.dut.clk, 3)
         led_with_ena_low = int(self.dut.uo_out.value)
-        self.dut._log.info(f"LED output with ena=0: {led_with_ena_low:08b}")
+        self.dut._log.info(f"LED output with ui_in[5]=0: {led_with_ena_low:08b}")
         
-        # Enable the module
-        self.dut.ena.value = 1
+        # Enable the module using ui_in[5]
+        self.dut.ui_in.value = 0b100100  # Alternate pattern, enable=1 (bit 5)
         await ClockCycles(self.dut.clk, 3)
-        self.dut.ena.value = 0  # Disable after pattern is set
+        self.dut.ui_in.value = 0b000100  # Disable ui_in[5] after pattern is set
         led_after_ena_high = int(self.dut.uo_out.value)
-        self.dut._log.info(f"LED output after ena=1: {led_after_ena_high:08b}")
+        self.dut._log.info(f"LED output after ui_in[5]=1: {led_after_ena_high:08b}")
 
 @cocotb.test()
 async def test_led_pattern_generator(dut):
@@ -157,9 +152,9 @@ async def test_led_pattern_generator(dut):
     clock = Clock(dut.clk, 125, units="ms")
     cocotb.start_soon(clock.start())
     
-    # Initialize signals
+    # Initialize signals - keep ena low throughout as it's not used
     dut.rst_n.value = 0
-    dut.ena.value = 0
+    dut.ena.value = 0  # Keep ena low - not used anymore
     dut.ui_in.value = 0
     dut.uio_in.value = 0
     
@@ -174,7 +169,7 @@ async def test_led_pattern_generator(dut):
     # Test reset functionality
     await tester.test_reset()
     
-    # Test enable functionality
+    # Test enable functionality (ui_in[5])
     await tester.test_enable()
     
     # Test each pattern at fast speed
@@ -203,19 +198,17 @@ async def test_led_pattern_generator(dut):
     dut._log.info("Switching from Knight Rider to Blink All")
     
     # Set Knight Rider pattern
-    dut.ena.value = 1
-    dut.ui_in.value = 0b00000  # Knight Rider, fast speed, not paused
+    dut.ui_in.value = 0b100000  # Knight Rider, fast speed, not paused, enable=1
     await ClockCycles(dut.clk, 3)
-    dut.ena.value = 0
+    dut.ui_in.value = 0b000000  # enable=0
     await ClockCycles(dut.clk, 5)
     knight_rider_output = int(dut.uo_out.value)
     dut._log.info(f"Knight Rider output: {knight_rider_output:08b}")
     
     # Switch to Blink All pattern
-    dut.ena.value = 1
-    dut.ui_in.value = 0b00011  # Blink All, fast speed, not paused
+    dut.ui_in.value = 0b100011  # Blink All, fast speed, not paused, enable=1
     await ClockCycles(dut.clk, 3)
-    dut.ena.value = 0
+    dut.ui_in.value = 0b000011  # enable=0
     await ClockCycles(dut.clk, 3)
     blink_all_output = int(dut.uo_out.value)
     dut._log.info(f"Blink All output: {blink_all_output:08b}")
@@ -234,9 +227,9 @@ async def test_basic_functionality(dut):
     clock = Clock(dut.clk, 125, units="ms")
     cocotb.start_soon(clock.start())
     
-    # Reset
+    # Reset - keep ena low throughout
     dut._log.info("Reset")
-    dut.ena.value = 0  # Hardware ena can be zero since enable is now ui_in[5]
+    dut.ena.value = 0  # Keep ena low - not used anymore
     dut.ui_in.value = 0
     dut.uio_in.value = 0
     dut.rst_n.value = 0
@@ -248,7 +241,7 @@ async def test_basic_functionality(dut):
     # Test pattern 3 (Blink All) - should give predictable output
     dut.ui_in.value = 0b100011  # Pattern 3, fast speed, not paused, enable=1 (bit 5)
     await ClockCycles(dut.clk, 1)
-    dut.ui_in.value = 0b000011  # Disable after setting pattern, enable=0
+    dut.ui_in.value = 0b000011  # Disable ui_in[5] after setting pattern
     
     # Wait for a few clock cycles and observe output
     await ClockCycles(dut.clk, 5)
