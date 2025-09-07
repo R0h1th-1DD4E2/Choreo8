@@ -36,6 +36,6 @@ module tt_um_BMSCE_T2 (
   assign uio_oe  = 8'b0;    // Not used
 
   // List all unused inputs to prevent warnings
-  wire _unused = &{ena, clk, rst_n, 1'b0, ui_in[7:5], uio_in[7:0]};
+  wire _unused = &{ 1'b0, ui_in[7:5], uio_in[7:0]};
 
 endmodule
