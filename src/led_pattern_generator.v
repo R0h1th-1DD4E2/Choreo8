@@ -67,10 +67,10 @@ end
 //----------------------------------------------------------------
 
 always @(posedge clk or negedge rst_n) begin
-    if(ena || !rst_n) 
+    if(!rst_n) 
         pattern <= pat_sel;
     else
-        pattern <= pattern;
+        pattern <= (ena) ?  pat_sel : pattern;
 end
 
 //----------------------------------------------------------------
