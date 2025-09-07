@@ -107,7 +107,7 @@ always @(posedge div_clk or negedge rst_n) begin
                             knight_pos <= knight_pos + 1;
                         end
                     end else if (knight_dir == 1) begin
-                        led_out <= (8'b00001000 >> (3 - knight_pos)) | (8'b00010000 << (3 - knight_pos ) ); // Move to end
+                        led_out <= (8'b10000000 >> knight_pos) | (8'b00000001 << knight_pos); // Move to end
                         if (knight_pos == 0) begin
                             knight_dir <= 0;  // Change direction at ends
                         end else begin
@@ -132,7 +132,7 @@ always @(posedge div_clk or negedge rst_n) begin
                             walk_pos <= walk_pos + 1;
                         end
                     end else if (walk_dir == 1) begin
-                        led_out <= (8'b11000000 >> (7 - walk_pos)); // Move left
+                         led_out <= 8'b00000011 << walk_pos; // Move left
                         if (walk_pos == 0) begin
                             walk_dir <= 0;  // Change direction at leftmost position
                         end else begin
