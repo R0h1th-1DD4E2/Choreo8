@@ -64,17 +64,3 @@ The design demonstrates sequential logic, pattern generation, speed control, and
 - **Blink All, Pause** → `ui_in = 0111_1xxx`  
 
 ---
-
-## Repository Structure
-Choreo8/
-├── .devcontainer/ # VS Code Dev Container setup
-├── .github/
-│ └── workflows/ # CI/CD workflows (e.g., Tiny Tapeout automation)
-├── .vscode/ # Editor settings and tasks for VS Code
-├── docs/ # Project documentation
-├── src/ # Source code (Verilog modules)
-├── test/ # Testbenches and simulation files
-├── .gitignore # Files ignored by Git
-├── LICENSE # Apache-2.0 License
-├── README.md # Main project documentation
-└── info.yaml # Tiny Tapeout configuration (top module, sources, etc.)
