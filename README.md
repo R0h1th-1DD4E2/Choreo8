@@ -1,41 +1,80 @@
 ![](../../workflows/gds/badge.svg) ![](../../workflows/docs/badge.svg) ![](../../workflows/test/badge.svg) ![](../../workflows/fpga/badge.svg)
 
-# Tiny Tapeout Verilog Project Template
+## Choreo8 – LED Pattern Generator
 
-- [Read the documentation for project](docs/info.md)
+## Overview
+Choreo8 is an **8-bit LED pattern generator** designed for **Tiny Tapeout**.  
+It drives LEDs with multiple selectable patterns, controllable through input switches.  
+The design demonstrates sequential logic, pattern generation, speed control, and pause/resume functionality.
 
-## What is Tiny Tapeout?
+---
 
-Tiny Tapeout is an educational project that aims to make it easier and cheaper than ever to get your digital and analog designs manufactured on a real chip.
+## Features
+- **8 Selectable LED Patterns**:
+  - `000` – Knight Rider  
+  - `001` – Walking Pair  
+  - `010` – Expanding/Contracting  
+  - `011` – Blink All  
+  - `100` – Alternate Pattern  
+  - `101` – Marquee Pattern  
+  - `110` – Random Sparkle (LFSR based)  
+  - `111` – All OFF  
 
-To learn more and get started, visit https://tinytapeout.com.
+- **Controls**:
+  - `ui_in[2:0]` → Pattern select  
+  - `ui_in[3]` → Speed select (0 = fast, 1 = slow)  
+  - `ui_in[4]` → Pause (hold current state)  
+  - `ui_in[5]` → Enable (pattern active only when high)  
 
-## Set up your Verilog project
+- **Outputs**:
+  - `uo_out[7:0]` → LED pattern output  
 
-1. Add your Verilog files to the `src` folder.
-2. Edit the [info.yaml](info.yaml) and update information about your project, paying special attention to the `source_files` and `top_module` properties. If you are upgrading an existing Tiny Tapeout project, check out our [online info.yaml migration tool](https://tinytapeout.github.io/tt-yaml-upgrade-tool/).
-3. Edit [docs/info.md](docs/info.md) and add a description of your project.
-4. Adapt the testbench to your design. See [test/README.md](test/README.md) for more information.
+- **Clock Divider**:
+  - Input clock assumed ~8 Hz  
+  - Generates slow/fast modes (1 Hz / 4 Hz)  
 
-The GitHub action will automatically build the ASIC files using [OpenLane](https://www.zerotoasiccourse.com/terminology/openlane/).
+---
 
-## Enable GitHub actions to build the results page
+## Pinout
+| Pin          | Direction | Description                         |
+|--------------|-----------|-------------------------------------|
+| `ui_in[2:0]` | Input     | Pattern select (000–111)            |
+| `ui_in[3]`   | Input     | Speed select (0 = fast, 1 = slow)  |
+| `ui_in[4]`   | Input     | Pause control                       |
+| `ui_in[5]`   | Input     | Enable                              |
+| `uo_out[7:0]`| Output    | LED pattern output                  |
+| `uio_*`      | –         | Not used                            |
+| `clk`        | Input     | System clock (~8 Hz expected)       |
+| `rst_n`      | Input     | Active-low reset                    |
 
-- [Enabling GitHub Pages](https://tinytapeout.com/faq/#my-github-action-is-failing-on-the-pages-part)
+---
 
-## Resources
+## Usage
+1. Set `ui_in[5] = 1` (enable).  
+2. Select a pattern with `ui_in[2:0]`.  
+3. Adjust speed using `ui_in[3]`.  
+4. Pause the animation with `ui_in[4] = 1`.  
+5. Reset system with `rst_n = 0`.
 
-- [FAQ](https://tinytapeout.com/faq/)
-- [Digital design lessons](https://tinytapeout.com/digital_design/)
-- [Learn how semiconductors work](https://tinytapeout.com/siliwiz/)
-- [Join the community](https://tinytapeout.com/discord)
-- [Build your design locally](https://www.tinytapeout.com/guides/local-hardening/)
+---
 
-## What next?
+## Example Configurations
+- **Knight Rider, Fast** → `ui_in = 0000_1xxx`  
+- **Walking Pair, Slow** → `ui_in = 0011_1xxx`  
+- **Blink All, Pause** → `ui_in = 0111_1xxx`  
 
-- [Submit your design to the next shuttle](https://app.tinytapeout.com/).
-- Edit [this README](README.md) and explain your design, how it works, and how to test it.
-- Share your project on your social network of choice:
-  - LinkedIn [#tinytapeout](https://www.linkedin.com/search/results/content/?keywords=%23tinytapeout) [@TinyTapeout](https://www.linkedin.com/company/100708654/)
-  - Mastodon [#tinytapeout](https://chaos.social/tags/tinytapeout) [@matthewvenn](https://chaos.social/@matthewvenn)
-  - X (formerly Twitter) [#tinytapeout](https://twitter.com/hashtag/tinytapeout) [@tinytapeout](https://twitter.com/tinytapeout)
+---
+
+## Repository Structure
+Choreo8/
+├── .devcontainer/ # VS Code Dev Container setup
+├── .github/
+│ └── workflows/ # CI/CD workflows (e.g., Tiny Tapeout automation)
+├── .vscode/ # Editor settings and tasks for VS Code
+├── docs/ # Project documentation
+├── src/ # Source code (Verilog modules)
+├── test/ # Testbenches and simulation files
+├── .gitignore # Files ignored by Git
+├── LICENSE # Apache-2.0 License
+├── README.md # Main project documentation
+└── info.yaml # Tiny Tapeout configuration (top module, sources, etc.)
