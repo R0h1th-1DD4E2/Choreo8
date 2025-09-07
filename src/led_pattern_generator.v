@@ -66,8 +66,8 @@ end
 //                     Pattern selection logic
 //----------------------------------------------------------------
 
-always @(posedge clk) begin
-    if(ena) 
+always @(posedge clk or negedge rst_n) begin
+    if(ena || !rst_n) 
         pattern <= pat_sel;
     else
         pattern <= pattern;
