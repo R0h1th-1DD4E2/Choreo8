@@ -100,16 +100,18 @@ always @(posedge div_clk or negedge rst_n) begin
             //--------------knight rider logic---------------
                 3'b000: begin               
                     if (knight_dir == 0) begin
-                        led_out <= (8'b00000001 << 1) | (8'b10000000 >> 1 ); // Move to middle
-                        knight_pos <= knight_pos + 1;
+                        led_out <= (8'b10000000 >> knight_pos ) | (8'b00000001 << knight_pos) ; // Move to middle
                         if (knight_pos == 3) begin
-                            knight_dir <= 1;
+                            knight_dir <= 1;  // Change direction at middle
+                        end else begin
+                            knight_pos <= knight_pos + 1;
                         end
                     end else if (knight_dir == 1) begin
-                        led_out <= (8'b00001000 >> 1) | (8'b00010000 << 1 ); // Move to end
-                        knight_pos <= knight_pos - 1;
+                        led_out <= (8'b00001000 >> (3 - knight_pos)) | (8'b00010000 << (3 - knight_pos ) ); // Move to end
                         if (knight_pos == 0) begin
-                            knight_dir <= 0;
+                            knight_dir <= 0;  // Change direction at ends
+                        end else begin
+                            knight_pos <= knight_pos - 1;
                         end
                     end
                     else begin
@@ -123,16 +125,18 @@ always @(posedge div_clk or negedge rst_n) begin
             //--------------walking pair logic---------------
                 3'b001: begin
                     if (walk_dir == 0) begin
-                        led_out <= (8'b00000011 << 1); // Move right
-                        walk_pos <= walk_pos + 1;
+                        led_out <= (8'b00000011 << walk_pos); // Move right
                         if (walk_pos == 6) begin
-                            walk_dir <= 1;
+                            walk_dir <= 1;  // Change direction at rightmost position
+                        end else begin
+                            walk_pos <= walk_pos + 1;
                         end
                     end else if (walk_dir == 1) begin
-                        led_out <= (8'b11000000 >> 1); // Move left
-                        walk_pos <= walk_pos - 1;
+                        led_out <= (8'b11000000 >> (7 - walk_pos)); // Move left
                         if (walk_pos == 0) begin
-                            walk_dir <= 0;
+                            walk_dir <= 0;  // Change direction at leftmost position
+                        end else begin
+                            walk_pos <= walk_pos - 1;
                         end
                     end
                     else begin
