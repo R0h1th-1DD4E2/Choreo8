@@ -57,10 +57,3 @@ The design demonstrates sequential logic, pattern generation, speed control, and
 5. Reset system with `rst_n = 0`.
 
 ---
-
-## Example Configurations
-- **Knight Rider, Fast** → `ui_in = 0000_1xxx`  
-- **Walking Pair, Slow** → `ui_in = 0011_1xxx`  
-- **Blink All, Pause** → `ui_in = 0111_1xxx`  
-
----
