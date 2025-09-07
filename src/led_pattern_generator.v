@@ -69,10 +69,10 @@ end
 always @(posedge clk or negedge rst_n) begin
     if(!rst_n) 
         pattern <= pat_sel;
-    else if (ena) 
-        pattern <= pat_sel;
+    // else if (ena) 
+    //     pattern <= pat_sel;
     else 
-        pattern <= pattern; // Maintain current pattern when not enabled
+        pattern <= pat_sel; // Maintain current pattern when not enabled
 end
 
 //----------------------------------------------------------------
